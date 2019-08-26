@@ -1,109 +1,138 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(new MaterialApp(
-    home: HomePage(),
-    debugShowCheckedModeBanner: false,
-  ));
-}
+void main() => runApp(
+      MaterialApp(
+        home: Home(),
+        debugShowCheckedModeBanner: false,
+      ),
+    );
 
-class HomePage extends StatefulWidget {
+class Home extends StatefulWidget {
   @override
-  HomePageState createState() => HomePageState();
+  _HomeState createState() => _HomeState();
 }
 
-class HomePageState extends State<HomePage> {
-  var keyForm = GlobalKey<FormState>();
-  var weightController = TextEditingController();
-  var heightController = TextEditingController();
-  String result;
+class _HomeState extends State<Home> {
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  void resultFields() {
-    weightController.clear();
-    heightController.clear();
-    setState(() {
-      result = "";
-    });
-  }
-
-  void resetFields() {
-    weightController.clear();
-    heightController.clear();
-    setState(() {
-      result = "";
-    });
-  }
+  TextEditingController _weightController = TextEditingController();
+  TextEditingController _heightController = TextEditingController();
+  String _result;
 
   @override
   void initState() {
     super.initState();
-    resultFields();
+    resetFields();
+  }
+
+  void resetFields() {
+    _weightController.text = '';
+    _heightController.text = '';
+    setState(() {
+      _result = 'Informe seus dados';
+    });
+  }
+
+  void calculateImc() {
+    double weight = double.parse(_weightController.text);
+    double height = double.parse(_heightController.text) / 100.0;
+    double imc = weight / (height * height);
+
+    setState(() {
+      _result = "IMC = ${imc.toStringAsPrecision(2)}\n";
+      if (imc < 18.6)
+        _result += "Abaixo do peso";
+      else if (imc < 25.0)
+        _result += "Peso ideal";
+      else if (imc < 30.0)
+        _result += "Levemente acima do peso";
+      else if (imc < 35.0)
+        _result += "Obesidade Grau I";
+      else if (imc < 40.0)
+        _result += "Obesidade Grau II";
+      else
+        _result += "Obesidade Grau IIII";
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text("Calculadora IMC"), actions: <Widget>[
-          IconButton(
-            onPressed: resetFields,
-            icon: Icon(Icons.refresh),
-          )
-        ]),
+        appBar: buildAppBar(),
+        backgroundColor: Colors.white,
         body: SingleChildScrollView(
-        child: Form(
-        child: Column(
+            padding: EdgeInsets.all(20.0), child: buildForm()));
+  }
+
+  AppBar buildAppBar() {
+    return AppBar(
+      title: Text('Calculadora de IMC'),
+      backgroundColor: Colors.blue,
+      actions: <Widget>[
+        IconButton(
+          icon: Icon(Icons.refresh),
+          onPressed: () {
+            resetFields();
+          },
+        )
+      ],
+    );
+  }
+
+  Form buildForm() {
+    return Form(
+      key: _formKey,
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-        buildTextFormField(
-        controller: weightController,
-        label: "Peso (kg)",
-        error: "Peso obrigatório!"),
-    buildTextFormField(
-    controller: heightController,
-    label: "Altura(cm)",
-    error: "Altura obrigatória!"),
-    Text(result),
-    RaisedButton(
-    child: Text("CALCULAR"),
-    onPressed: (){
-    keyForm.currentState.validate()){
-    calculateIMC();
-    }
-    },
-    /* )
-          ]
-              )
-              keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(labelText: "Peso (kg)"),
-              validator: (text) {
-                return text.isEmpty ? "Peso obrigatório!" : null;
-              },
-            )
-          ],
-        ))));
+          buildTextFormField(
+              label: "Peso (kg)",
+              error: "Insira seu peso!",
+              controller: _weightController),
+          buildTextFormField(
+              label: "Altura (cm)",
+              error: "Insira uma altura!",
+              controller: _heightController),
+          buildTextResult(),
+          buildCalculateButton(),
+        ],
+      ),
+    );
+  }
+
+  Padding buildCalculateButton() {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 36.0),
+      child: RaisedButton(
+        onPressed: () {
+          if (_formKey.currentState.validate()) {
+            calculateImc();
+          }
+        },
+        child: Text('CALCULAR', style: TextStyle(color: Colors.white)),
+      ),
+    );
+  }
+
+  Padding buildTextResult() {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 36.0),
+      child: Text(
+        _result,
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+
+  TextFormField buildTextFormField(
+      {TextEditingController controller, String error, String label}) {
+    return TextFormField(
+      keyboardType: TextInputType.number,
+      decoration: InputDecoration(labelText: label),
+      controller: controller,
+      validator: (text) {
+        return text.isEmpty ? error : null;
+      },
+    );
   }
 }
-*/
-    void calculateIMC()
-    {
-    double weight = double.parse(weightController.text);
-    double height = double.parse(heightController.text) /100.0;
-    double imc = weight / (height * height);
-    setState(() {
-    result = imc.toStringsAsFixed(2);
-    if (imc < 30.0){
-      result += "\nSobrepeso";
-    }
-    });
-    }
-    Widget buildTextFormField(
-    {TextEditingController controller, String label, String error}) {
-    return TextFormField(
-    controller: controller,
-    keyboardType: TextInputType.number,
-    decoration: InputDecoration(labelText: label),
-    validator: (text) {
-    return text.isEmpty ? error : null;
-    },
-    );
-    }
